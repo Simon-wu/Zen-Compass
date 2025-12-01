@@ -22,6 +22,8 @@ const App: React.FC = () => {
 
     if (current !== prev) {
       const diff = Math.abs(current - prev);
+      // Only trigger feedback if movement is smooth/slow enough to be intentional
+      // or if we cross major boundaries
       if (diff < 20) { 
         if (current === 0 || current === 360) {
             if (soundEnabled) playClick('heavy');
@@ -61,29 +63,29 @@ const App: React.FC = () => {
   // Permission / Start Screen
   if (needsPermission && !permissionGranted) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans select-none">
         {/* Ambient Blobs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-indigo-600/30 rounded-full blur-[80px] animate-blob" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-cyan-600/30 rounded-full blur-[80px] animate-blob animation-delay-2000" />
+        <div className="absolute top-0 left-[-20%] w-[80vw] h-[80vw] bg-indigo-900/40 rounded-full blur-[100px] blob-1" />
+        <div className="absolute bottom-0 right-[-20%] w-[80vw] h-[80vw] bg-purple-900/30 rounded-full blur-[100px] blob-2" />
 
-        <div className="z-10 flex flex-col items-center space-y-12">
-            <div className="w-32 h-32 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)] flex items-center justify-center ring-1 ring-white/20">
-                <CompassIcon className="w-14 h-14 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" strokeWidth={1.5} />
+        <div className="z-10 flex flex-col items-center space-y-12 animate-[fadeIn_1s_ease-out]">
+            <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-white/10 to-white/5 border border-white/20 backdrop-blur-2xl shadow-[0_0_50px_rgba(255,255,255,0.15)] flex items-center justify-center">
+                <CompassIcon className="w-14 h-14 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" strokeWidth={1.5} />
             </div>
             
-            <div className="text-center space-y-3">
-                <h1 className="text-5xl font-thin tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
+            <div className="text-center space-y-4">
+                <h1 className="text-5xl font-thin tracking-tighter text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]">
                     Aether
                 </h1>
-                <p className="text-neutral-400 text-sm tracking-[0.2em] uppercase">Next Gen Compass</p>
+                <p className="text-white/50 text-xs tracking-[0.3em] uppercase">Precision Instrument</p>
             </div>
 
             <button
             onClick={handleStart}
-            className="group relative px-10 py-4 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-full font-medium tracking-wide overflow-hidden transition-all duration-300 hover:bg-white/20 hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+            className="group relative px-12 py-5 bg-white/5 backdrop-blur-xl border border-white/20 text-white rounded-full font-medium tracking-wide overflow-hidden transition-all duration-500 hover:bg-white/10 hover:border-white/40 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(0,0,0,0.5)]"
             >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                <span className="relative">Initialize System</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <span className="relative drop-shadow-md">INITIALIZE</span>
             </button>
         </div>
       </div>
@@ -92,31 +94,31 @@ const App: React.FC = () => {
 
   // Main App Interface
   return (
-    <div className="relative min-h-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none">
+    <div className="relative min-h-screen bg-black text-white overflow-hidden flex flex-col font-sans select-none touch-none">
       
       {/* --- Ambient Lighting Background --- */}
       <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[80vw] h-[80vw] bg-purple-900/20 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-          <div className="absolute bottom-0 right-1/4 w-[80vw] h-[80vw] bg-blue-900/20 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-4000" />
+          <div className="absolute top-[-10%] left-[-10%] w-[70vw] h-[70vw] bg-blue-900/20 rounded-full blur-[120px] mix-blend-screen blob-1" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[70vw] h-[70vw] bg-fuchsia-900/20 rounded-full blur-[120px] mix-blend-screen blob-2" />
       </div>
 
       {/* --- Header --- */}
-      <header className="relative z-20 p-6 pt-8 flex justify-between items-center">
-         <div className="flex items-center gap-2">
-            <Navigation size={14} className="text-cyan-400 fill-cyan-400/20" />
-            <span className="text-xs font-semibold tracking-[0.2em] text-cyan-100/50 uppercase">Aether OS</span>
+      <header className="relative z-20 p-6 pt-10 flex justify-between items-center">
+         <div className="flex items-center gap-3 glass-panel px-4 py-2 rounded-full">
+            <Navigation size={14} className="text-cyan-400 fill-cyan-400" />
+            <span className="text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">Aether OS</span>
          </div>
          
          <div className="flex space-x-4">
              <button 
                 onClick={toggleSound}
-                className="w-12 h-12 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 backdrop-blur-md border ${soundEnabled ? 'bg-white/10 border-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'bg-transparent border-white/5 text-white/40'}`}
              >
                  {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
              </button>
              <button 
                 onClick={() => setShowInfo(!showInfo)}
-                className="w-12 h-12 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                className="w-11 h-11 flex items-center justify-center bg-transparent border border-white/10 rounded-full text-white/60 hover:text-white hover:bg-white/5 transition-all backdrop-blur-md"
              >
                  <Info size={18} />
              </button>
@@ -124,27 +126,27 @@ const App: React.FC = () => {
       </header>
 
       {/* --- Main Content --- */}
-      <main className="flex-1 flex flex-col items-center justify-center relative pb-20 z-10">
+      <main className="flex-1 flex flex-col items-center justify-center relative pb-20 z-10 perspective-[1000px]">
         
         {/* The Indicator (Fixed Needle) */}
-        {/* We use a glass prism look for the indicator */}
-        <div className="absolute z-30 top-[10%] sm:top-[12%] flex flex-col items-center pointer-events-none">
-            <div className="w-1 h-8 bg-gradient-to-b from-red-500 to-transparent rounded-full drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+        <div className="absolute z-40 top-[8%] sm:top-[10%] flex flex-col items-center pointer-events-none opacity-90">
+            <div className="w-[3px] h-8 bg-gradient-to-b from-red-500 to-transparent rounded-full shadow-[0_0_15px_rgba(239,68,68,1)]"></div>
         </div>
 
         {/* --- The Glass Puck Container --- */}
-        <div className="relative">
+        <div className="relative group">
             
-            {/* Outer Glass Ring (The Device Housing Look) */}
-            <div className="absolute inset-[-20px] rounded-full border border-white/5 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-[2px] shadow-2xl opacity-60"></div>
+            {/* Ambient Glow behind the puck */}
+            <div className="absolute inset-4 rounded-full bg-cyan-500/10 blur-[60px] animate-pulse"></div>
 
             {/* Main Dial Area */}
-            <div className="relative w-[90vw] h-[90vw] max-w-[420px] max-h-[420px] rounded-full">
+            <div className="relative w-[88vw] h-[88vw] max-w-[380px] max-h-[380px] rounded-full">
                 
                 {/* 1. Base Glass Plate */}
-                <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8),_0_20px_60px_rgba(0,0,0,0.5)] ring-1 ring-white/5">
-                    {/* Gloss Shine */}
-                    <div className="absolute inset-0 rounded-full glass-shine opacity-30 pointer-events-none"></div>
+                <div className="absolute inset-0 rounded-full bg-[#0a0a0a]/60 backdrop-blur-3xl border border-white/10 shadow-[inset_0_0_30px_rgba(255,255,255,0.05),_0_30px_80px_rgba(0,0,0,0.8)]">
+                    {/* Ring Highlights */}
+                    <div className="absolute inset-0 rounded-full border border-white/5 mix-blend-overlay"></div>
+                    <div className="absolute inset-[2px] rounded-full border border-white/5 mix-blend-overlay opacity-50"></div>
                 </div>
 
                 {/* 2. Level Bubble (Liquid Layer) */}
@@ -157,20 +159,22 @@ const App: React.FC = () => {
                     pitch={compassData.pitch}
                 />
                 
-                {/* 4. Digital Readout (Top Glass Layer) */}
+                {/* 4. Digital Readout (Floating Text) */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <div 
-                        className="flex flex-col items-center justify-center transform transition-transform duration-100" 
+                        className="flex flex-col items-center justify-center transform transition-transform duration-200 ease-out" 
                         style={{ 
-                            transform: `translateZ(50px) rotateX(${-compassData.pitch/2}deg) rotateY(${compassData.roll/2}deg)` 
+                            transform: `translateZ(40px) rotateX(${-compassData.pitch/3}deg) rotateY(${compassData.roll/3}deg)` 
                         }}
                     >
-                        <h1 className="text-7xl sm:text-8xl font-thin tracking-tighter tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/50 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
+                        <h1 className="text-7xl sm:text-8xl font-thin tracking-[-0.05em] tabular-nums text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                             {displayHeading}°
                         </h1>
-                        <span className="text-2xl font-light text-cyan-400 tracking-[0.3em] mt-2 drop-shadow-[0_0_10px_rgba(34,211,238,0.4)]">
-                            {getCardinalDirection(displayHeading)}
-                        </span>
+                        <div className="mt-2 px-4 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                            <span className="text-xl font-medium text-cyan-300 tracking-[0.2em] drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">
+                                {getCardinalDirection(displayHeading)}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -181,18 +185,18 @@ const App: React.FC = () => {
       {/* --- Footer Stats --- */}
       <footer className="relative z-20 p-8 flex justify-center mb-safe">
         {compassError ? (
-            <div className="backdrop-blur-md bg-red-500/10 border border-red-500/20 px-6 py-3 rounded-2xl">
-                <p className="text-red-400 text-xs font-mono">{compassError}</p>
+            <div className="glass-panel px-6 py-3 rounded-2xl bg-red-500/5 border-red-500/20">
+                <p className="text-red-400 text-xs font-mono tracking-wide">{compassError}</p>
             </div>
         ) : (
-            <div className="grid grid-cols-2 gap-px bg-white/10 rounded-2xl overflow-hidden shadow-lg backdrop-blur-xl border border-white/10">
-                <div className="px-6 py-3 bg-black/20 flex flex-col items-center">
-                    <span className="text-[10px] text-white/40 uppercase tracking-wider">Pitch</span>
-                    <span className="text-lg font-light tabular-nums">{Math.round(compassData.pitch)}°</span>
+            <div className="grid grid-cols-2 gap-[1px] bg-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl border border-white/10">
+                <div className="px-8 py-4 bg-black/40 flex flex-col items-center gap-1 group">
+                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em] group-hover:text-cyan-400 transition-colors">Pitch</span>
+                    <span className="text-lg font-light tabular-nums text-white/90">{Math.round(compassData.pitch)}°</span>
                 </div>
-                <div className="px-6 py-3 bg-black/20 flex flex-col items-center">
-                    <span className="text-[10px] text-white/40 uppercase tracking-wider">Roll</span>
-                    <span className="text-lg font-light tabular-nums">{Math.round(compassData.roll)}°</span>
+                <div className="px-8 py-4 bg-black/40 flex flex-col items-center gap-1 group">
+                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em] group-hover:text-cyan-400 transition-colors">Roll</span>
+                    <span className="text-lg font-light tabular-nums text-white/90">{Math.round(compassData.roll)}°</span>
                 </div>
             </div>
         )}
@@ -200,28 +204,28 @@ const App: React.FC = () => {
 
       {/* --- Info Modal (Glass Card) --- */}
       {showInfo && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
-            <div className="bg-[#101010]/80 border border-white/10 rounded-[2.5rem] p-8 max-w-xs w-full shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-3xl">
-                {/* Glow effect inside modal */}
-                <div className="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-[60px]"></div>
-
-                <h2 className="text-xl font-light mb-8 text-white text-center tracking-wider relative z-10">System Guide</h2>
-                <div className="space-y-6 relative z-10">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]">1</div>
-                        <p className="text-sm text-neutral-400 font-light">Calibrate by tilting.</p>
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
+            <div className="glass-panel p-8 max-w-xs w-full rounded-[2rem] relative overflow-hidden">
+                
+                <div className="relative z-10 text-center">
+                    <h2 className="text-2xl font-thin mb-8 text-white tracking-widest uppercase">Guide</h2>
+                    <div className="space-y-6 text-left">
+                        <div className="flex items-center gap-4 group">
+                            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.2)] group-hover:scale-110 transition-transform">1</div>
+                            <p className="text-sm text-neutral-300 font-light">Tilt device to float dial.</p>
+                        </div>
+                         <div className="flex items-center gap-4 group">
+                            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.2)] group-hover:scale-110 transition-transform">2</div>
+                            <p className="text-sm text-neutral-300 font-light">Haptics signal North.</p>
+                        </div>
                     </div>
-                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]">2</div>
-                        <p className="text-sm text-neutral-400 font-light">Audio confirms North.</p>
-                    </div>
+                    <button 
+                        onClick={() => setShowInfo(false)}
+                        className="mt-10 w-full py-4 bg-white text-black rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-cyan-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-all active:scale-95"
+                    >
+                        Dismiss
+                    </button>
                 </div>
-                <button 
-                    onClick={() => setShowInfo(false)}
-                    className="mt-10 w-full py-4 bg-white text-black rounded-2xl font-medium text-sm active:scale-95 transition-all hover:bg-cyan-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] relative z-10"
-                >
-                    Close
-                </button>
             </div>
         </div>
       )}

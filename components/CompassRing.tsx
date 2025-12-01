@@ -16,19 +16,19 @@ const CompassRing: React.FC<CompassRingProps> = ({ heading, roll = 0, pitch = 0 
       const transform = `rotate(${i} 150 150)`;
 
       if (i % 30 === 0) {
-        // Major Tick - Glowing "Light Pipes"
+        // Major Tick - Glowing "Neon Tubes"
         major.push(
           <line
             key={`major-${i}`}
             x1="150"
             y1="25"
             x2="150"
-            y2="40"
-            stroke="url(#gradTick)"
+            y2="42"
+            stroke="white"
             strokeWidth="2"
             transform={transform}
             strokeLinecap="round"
-            className="drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]"
+            className="opacity-90 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]"
           />
         );
         
@@ -38,13 +38,13 @@ const CompassRing: React.FC<CompassRingProps> = ({ heading, roll = 0, pitch = 0 
                 <text
                     key={`deg-${i}`}
                     x="150"
-                    y="18"
-                    fill="rgba(255,255,255,0.6)"
-                    fontSize="9"
-                    fontWeight="600"
+                    y="20"
+                    fill="rgba(255,255,255,0.5)"
+                    fontSize="8"
+                    fontWeight="500"
                     textAnchor="middle"
                     transform={`rotate(${i} 150 150)`}
-                    className="font-mono tracking-tighter"
+                    className="font-mono tracking-widest"
                 >
                     {i}
                 </text>
@@ -52,17 +52,17 @@ const CompassRing: React.FC<CompassRingProps> = ({ heading, roll = 0, pitch = 0 
         }
 
       } else if (i % 2 === 0) {
-        // Minor Tick - Etched glass look
-        const isNearCardinal = i % 90 < 4 || i % 90 > 86;
+        // Minor Tick - Subtle etching
+        const isNearCardinal = i % 90 < 5 || i % 90 > 85;
         if (!isNearCardinal) {
             minor.push(
             <line
                 key={`minor-${i}`}
                 x1="150"
-                y1="32"
+                y1="34"
                 x2="150"
-                y2="40"
-                stroke="rgba(255,255,255,0.2)"
+                y2="42"
+                stroke="rgba(255,255,255,0.15)"
                 strokeWidth="1"
                 transform={transform}
                 strokeLinecap="round"
@@ -73,28 +73,28 @@ const CompassRing: React.FC<CompassRingProps> = ({ heading, roll = 0, pitch = 0 
     }
     
     const cards = [
-        { label: 'N', deg: 0, color: '#FF3B30' }, // Apple Red
-        { label: 'E', deg: 90, color: '#F8F9FA' },
-        { label: 'S', deg: 180, color: '#F8F9FA' },
-        { label: 'W', deg: 270, color: '#F8F9FA' },
+        { label: 'N', deg: 0, color: '#FF453A' }, // SF Red
+        { label: 'E', deg: 90, color: '#F2F2F7' },
+        { label: 'S', deg: 180, color: '#F2F2F7' },
+        { label: 'W', deg: 270, color: '#F2F2F7' },
     ];
 
     return { majorTicks: major, minorTicks: minor, labels: lbls, cardinals: cards };
   }, []);
 
-  const xTilt = Math.max(-15, Math.min(15, pitch)); 
-  const yTilt = Math.max(-15, Math.min(15, roll));
+  const xTilt = Math.max(-20, Math.min(20, pitch)); 
+  const yTilt = Math.max(-20, Math.min(20, roll));
 
   return (
     <div 
-        className="relative w-full h-full flex items-center justify-center"
-        style={{ perspective: '1200px' }}
+        className="relative w-full h-full flex items-center justify-center pointer-events-none"
+        style={{ perspective: '1000px' }}
     >
       <div 
         className="w-full h-full absolute top-0 left-0 will-change-transform"
         style={{
             transform: `rotateX(${-xTilt}deg) rotateY(${yTilt}deg)`,
-            transition: 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+            transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}
       >
           <svg
@@ -102,18 +102,12 @@ const CompassRing: React.FC<CompassRingProps> = ({ heading, roll = 0, pitch = 0 
             className="w-full h-full will-change-transform"
             style={{ 
                 transform: `rotate(${-heading}deg)`,
-                transition: 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)',
+                transition: 'transform 0.1s linear', // Smoother constant rotation
             }}
           >
-            <defs>
-                <linearGradient id="gradTick" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="white" stopOpacity="1" />
-                    <stop offset="100%" stopColor="white" stopOpacity="0.4" />
-                </linearGradient>
-            </defs>
-
-            {/* Subtle rotating glow behind the ticks */}
-            <circle cx="150" cy="150" r="130" fill="none" stroke="url(#gradTick)" strokeWidth="0.5" opacity="0.1" strokeDasharray="4 4" />
+            {/* Inner decorative glow ring */}
+            <circle cx="150" cy="150" r="120" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="40" />
+            <circle cx="150" cy="150" r="138" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="2 6" opacity="0.5" />
 
             <g>{minorTicks}</g>
             <g>{majorTicks}</g>
@@ -124,20 +118,20 @@ const CompassRing: React.FC<CompassRingProps> = ({ heading, roll = 0, pitch = 0 
                 <g key={c.label} transform={`rotate(${c.deg} 150 150)`}>
                     <text
                         x="150"
-                        y="68" 
+                        y="75" 
                         fill={c.color}
-                        fontSize="36"
+                        fontSize="32"
                         fontWeight="700"
                         textAnchor="middle"
                         className="font-sans"
                         style={{
-                            textShadow: c.label === 'N' ? '0 0 20px rgba(255, 59, 48, 0.6)' : '0 0 10px rgba(255,255,255,0.3)'
+                            filter: c.label === 'N' ? 'drop-shadow(0 0 8px rgba(255, 69, 58, 0.6))' : 'drop-shadow(0 0 4px rgba(255,255,255,0.2))'
                         }}
                     >
                         {c.label}
                     </text>
-                    {/* Add a tiny dot below the letter for precision */}
-                    <circle cx="150" cy="85" r="2" fill={c.color} opacity="0.8" />
+                    {/* Glowing indicator dot for cardinals */}
+                    <circle cx="150" cy="90" r="2" fill={c.color} opacity="0.6" />
                 </g>
             ))}
           </svg>
