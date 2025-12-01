@@ -28,19 +28,28 @@ export const useCompass = () => {
   };
 
   const handleOrientation = useCallback((event: DeviceOrientationEvent | any) => {
-    let heading = 0;
+    let heading: number | null = null;
+    let accuracy = 0;
 
     // iOS Webkit
     if (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) {
       heading = event.webkitCompassHeading;
+      accuracy = event.webkitCompassAccuracy || 0;
     } 
-    // Android / Non-Webkit
-    else if (event.alpha !== null) {
-      // In some Android browsers, alpha is just relative to start. 
-      // 'absolute' property check handles newer implementations.
-      // We convert standard alpha (counter-clockwise) to compass heading (clockwise)
-      heading = 360 - event.alpha;
+    // Android: Try absolute data first
+    else if (event.absolute === true || event.type === 'deviceorientationabsolute') {
+      if (event.alpha !== null) {
+         // Android standard: alpha is counter-clockwise rotation from North
+         heading = 360 - event.alpha;
+      }
     }
+    // Android Fallback: regular deviceorientation (might be relative, but better than nothing if absolute fails)
+    else if (event.alpha !== null && heading === null) {
+       // If event.absolute is undefined or false, this might drift, but some devices only send this.
+       heading = 360 - event.alpha;
+    }
+
+    if (heading === null) return;
 
     // Normalize
     heading = heading % 360;
@@ -56,25 +65,19 @@ export const useCompass = () => {
 
     setCompassData({
       heading: smoothed,
-      accuracy: event.webkitCompassAccuracy || 0,
+      accuracy,
       roll,
       pitch,
     });
   }, []);
 
   const requestPermission = async () => {
-    if (typeof DeviceOrientationEvent === 'undefined') {
-        setError('Device orientation not supported on this device.');
-        return;
-    }
-
-    if (
-      typeof (DeviceOrientationEvent as any).requestPermission === 'function'
-    ) {
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
       try {
         const permissionState = await (DeviceOrientationEvent as any).requestPermission();
         if (permissionState === 'granted') {
           setPermissionGranted(true);
+          // iOS 13+
           window.addEventListener('deviceorientation', handleOrientation, true);
         } else {
           setError('Permission denied');
@@ -83,9 +86,9 @@ export const useCompass = () => {
         setError(err.message || 'Error requesting permission');
       }
     } else {
-      // Non-iOS 13+ devices
+      // Android / Non-iOS 13+
       setPermissionGranted(true);
-      window.addEventListener('deviceorientation', handleOrientation, true);
+      // We bind listeners in useEffect for these cases
     }
   };
 
@@ -96,18 +99,22 @@ export const useCompass = () => {
       setNeedsPermission(true);
     } else {
       setNeedsPermission(false);
-      // For non-iOS 13+, we usually don't need explicit permission click, 
-      // but some browsers still block it without user interaction in strict modes.
-      // We will set granted true here for simplicity, but if it fails, the user might need to click start.
       setPermissionGranted(true);
-      if (typeof window !== 'undefined') {
-          window.addEventListener('deviceorientation', handleOrientation, true);
-      }
+      
+      // Android / Standard PC implementation
+      // Chrome on Android prefers 'deviceorientationabsolute' for compass
+      if ('ondeviceorientationabsolute' in window) {
+        window.addEventListener('deviceorientationabsolute', handleOrientation as any, true);
+      } 
+      
+      // Always listen to standard event as well for fallback and tilt data
+      window.addEventListener('deviceorientation', handleOrientation, true);
     }
 
     return () => {
-      if (typeof window !== 'undefined') {
-          window.removeEventListener('deviceorientation', handleOrientation);
+      window.removeEventListener('deviceorientation', handleOrientation);
+      if ('ondeviceorientationabsolute' in window) {
+        window.removeEventListener('deviceorientationabsolute', handleOrientation as any);
       }
     };
   }, [handleOrientation]);
