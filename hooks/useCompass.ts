@@ -14,6 +14,8 @@ export const useCompass = () => {
 
   // Use refs for smoothing to avoid dependency loops in event listeners
   const lastHeading = useRef<number>(0);
+  // Track if we are receiving high-quality absolute data to ignore low-quality fallbacks
+  const hasAbsoluteData = useRef<boolean>(false);
 
   // Smooth the heading transition
   const smoothHeading = (current: number, target: number): number => {
@@ -30,45 +32,65 @@ export const useCompass = () => {
   const handleOrientation = useCallback((event: DeviceOrientationEvent | any) => {
     let heading: number | null = null;
     let accuracy = 0;
+    let isAbsolute = false;
 
-    // iOS Webkit
+    // 1. iOS Webkit (Best for iOS)
     if (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) {
       heading = event.webkitCompassHeading;
       accuracy = event.webkitCompassAccuracy || 0;
+      isAbsolute = true;
     } 
-    // Android: Try absolute data first
-    else if (event.absolute === true || event.type === 'deviceorientationabsolute') {
+    // 2. Android: Absolute Event (Best for Android)
+    else if (event.type === 'deviceorientationabsolute' || event.absolute === true) {
       if (event.alpha !== null) {
-         // Android standard: alpha is counter-clockwise rotation from North
          heading = 360 - event.alpha;
+         isAbsolute = true;
+         hasAbsoluteData.current = true; // Mark that we have a good source
       }
     }
-    // Android Fallback: regular deviceorientation (might be relative, but better than nothing if absolute fails)
-    else if (event.alpha !== null && heading === null) {
-       // If event.absolute is undefined or false, this might drift, but some devices only send this.
-       heading = 360 - event.alpha;
+    // 3. Android: Standard Event (Fallback)
+    else if (event.type === 'deviceorientation') {
+        // If we have already received absolute data from the other event listener,
+        // IGNORE the alpha from this relative event to prevent jitter/conflict.
+        if (hasAbsoluteData.current) {
+            heading = null; // Skip heading update from this event
+        } else if (event.alpha !== null) {
+            // Only use this if we have NO other choice
+            heading = 360 - event.alpha;
+        }
     }
 
-    if (heading === null) return;
-
-    // Normalize
-    heading = heading % 360;
-    if (heading < 0) heading += 360;
-
-    // Apply smoothing
-    const smoothed = smoothHeading(lastHeading.current, heading);
-    lastHeading.current = smoothed;
-
-    // Get tilt for the "level" bubble
+    // Always update tilt (Pitch/Roll) from any valid event
+    // (Sometimes absolute events don't carry beta/gamma on some devices, so we take them from wherever we can)
     const roll = event.gamma || 0;  // Left/Right
     const pitch = event.beta || 0;  // Front/Back
+    
+    // If we have a heading update, process it
+    if (heading !== null) {
+        // Normalize
+        heading = heading % 360;
+        if (heading < 0) heading += 360;
 
-    setCompassData({
-      heading: smoothed,
-      accuracy,
-      roll,
-      pitch,
-    });
+        // Apply smoothing
+        const smoothed = smoothHeading(lastHeading.current, heading);
+        lastHeading.current = smoothed;
+
+        setCompassData({
+            heading: smoothed,
+            accuracy,
+            roll,
+            pitch,
+        });
+    } else {
+        // If we only have tilt data (because we ignored relative heading), update just tilt
+        // We use the last known heading to keep UI stable
+        setCompassData(prev => ({
+            ...prev,
+            roll,
+            pitch,
+        }));
+    }
+
   }, []);
 
   const requestPermission = async () => {
@@ -107,7 +129,8 @@ export const useCompass = () => {
         window.addEventListener('deviceorientationabsolute', handleOrientation as any, true);
       } 
       
-      // Always listen to standard event as well for fallback and tilt data
+      // Always listen to standard event as well for tilt (beta/gamma) data
+      // Our handleOrientation logic now safely ignores the alpha if it conflicts.
       window.addEventListener('deviceorientation', handleOrientation, true);
     }
 
